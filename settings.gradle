@@ -1,0 +1,2 @@
+include ':library', ':gstreamer'
+rootProject.name = 'gstreamer10'

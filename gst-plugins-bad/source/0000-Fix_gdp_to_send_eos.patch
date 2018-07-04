@@ -1,0 +1,58 @@
+diff --git a/gst/gdp/gstgdppay.c b/gst/gdp/gstgdppay.c
+index 6b55895b0..f002cf4c2 100644
+--- a/gst/gdp/gstgdppay.c
++++ b/gst/gdp/gstgdppay.c
+@@ -527,9 +527,21 @@ gst_gdp_pay_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
+   GST_BUFFER_TIMESTAMP (outbuffer) = GST_EVENT_TIMESTAMP (event);
+   GST_BUFFER_DURATION (outbuffer) = 0;
+ 
++  if (GST_EVENT_IS_STICKY (event)) {
++    GST_BUFFER_FLAG_SET (outbuffer, GST_BUFFER_FLAG_HEADER);
++    this->reset_streamheader = TRUE;
++  }
++
+   /* if we got a new segment or tag event, we should put it on our streamheader,
+    * and not send it on */
+   switch (GST_EVENT_TYPE (event)) {
++    case GST_EVENT_EOS:
++      GST_DEBUG_OBJECT (this, "Received EOS - shipping immediately");
++      flowret = gst_pad_push (this->srcpad, outbuffer);
++      if (flowret != GST_FLOW_OK)
++        goto push_error;
++      outbuffer = NULL;
++      break;
+     case GST_EVENT_STREAM_START:
+       GST_DEBUG_OBJECT (this, "Received stream start id");
+       this->have_streamstartid = TRUE;
+@@ -558,10 +570,6 @@ gst_gdp_pay_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
+       break;
+   }
+ 
+-  if (GST_EVENT_IS_STICKY (event)) {
+-    GST_BUFFER_FLAG_SET (outbuffer, GST_BUFFER_FLAG_HEADER);
+-    this->reset_streamheader = TRUE;
+-  }
+ 
+   /* if we have EOS, we should send on EOS ourselves */
+   if (GST_EVENT_TYPE (event) == GST_EVENT_EOS
+@@ -577,8 +585,6 @@ gst_gdp_pay_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
+     flowret = gst_gdp_queue_buffer (this, outbuffer);
+     if (flowret != GST_FLOW_OK)
+       goto push_error;
+-  } else {
+-    gst_buffer_unref (outbuffer);
+   }
+ 
+ done:
+diff --git a/gst/gdp/gstgdppay.h b/gst/gdp/gstgdppay.h
+index 2e01eb1fe..5d571881b 100644
+--- a/gst/gdp/gstgdppay.h
++++ b/gst/gdp/gstgdppay.h
+@@ -55,6 +55,7 @@ struct _GstGDPPay
+   gboolean  have_streamstartid;
+   gboolean  have_caps;
+   gboolean  have_segment;
++  gboolean  have_eos;
+ 
+   gboolean reset_streamheader;
+ 

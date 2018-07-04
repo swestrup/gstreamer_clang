@@ -1,0 +1,149 @@
+README
+======
+
+Introduction
+------------
+
+What you are looking at is the README for a quick-and-dirty port of 
+
+    GStreamer V1.12.4
+
+for the ARM V7 instruction set with full NEON support, running on the Android
+OS, compiled using Clang in a cross-compiling environment on Linux x86_64 (It
+has so far been tested only on CentOS and OpenSUSE).
+
+This port was made by the folks at Userful.com, and is being released under
+the original GStreamer license (for which, see the file LICENSE in the same
+directory as this file). This includes any bug fixes and/or additions made by
+Userful (for which, see the section "Changes", below).
+
+Limitations
+-----------
+
+Since this port was originally intended for internal-use-only, and was done on
+a tight time budget, we've only ported the minimum number of modules that we
+actually need for our project, and have bodily included archives of those
+modules (which may or may not currently be legal to redistribute -- this still
+needs to be checked!) The final intent was to work much as cerbero does, and
+download modules into a cache at need, to both reduce bloat and to bypass any
+issues involving redistribution, but that code has not yet been written.
+
+The glue code that has been written is all entirely in BASH script files for
+two main reasons:
+
+1) BASH scripts are ubiquitous in the Linux world, so anyone knowning enough
+   to contribute to this project is likely to be able to follow the
+   scripts.
+
+2) The Cerbero scripts are entirely in Python while the author of this port is
+   a Perl coder, and didn't want anyone from the GStreamer dev team to be as
+   confused by his code as he was with theirs.
+
+So far this port ONLY supports libraries that can be built via autotools,
+although the intent in to (eventually) support other build systems such as
+CMake and Meson (although I am not pleased with the cross-compilation
+abilities of either.)
+
+Also, this build system is intended to be able to produce both release and
+debug versions of the libraries, with the debug versions having various Clang
+Sanitizers's active, however we have run into numerous problems with code that
+compiles cleanly without the sanitizers failing to compile with them, so for
+now we only produce a single version of the libraries.
+
+Finally this set of scripts attempts to build the entire library from start to
+finish and has no support for restarting in cases of error. This would be
+another nice feature to add sometime.
+
+Changes
+-------
+
+We have been careful to make the absolute minimal changes to all of the source
+libraries as possible to get them to compile under Clang. Mostly we worked by
+manipulating the parameters passed to the autotools, but in some cases we were
+forced to make patch files that are applied after the pristine archives are
+expanded. 
+
+In at least two cases we've applied patches to fix bugs and/or upgrade
+functionality we found necessary. You may want to either include or delete the
+relevant patches, depending on your needs:
+
+1) In gst-plugins-good we needed the jpegdec element to be much faster, so we
+   made extensive changes to take advantage of running in a multicore
+   environment, and achieved roughly 3x speed on our test hardware. This will
+   inevitably have the effect of a slight speed slowdown in a single-core
+   environment. The changes can be found in the file
+
+      0001-Mulitcore-JpegDec.patch
+
+2) In gst-plugins-bad we ran into problems with rtsp streams in that gdppay
+   and gdpdepay did not send or handle EOS messages, so our remote stream
+   clients never knew when one stream ended and a new one began. We added a
+   patch to fix this, although we are still uncertain if there was some other
+   intended way to signal EOS (although we have found none).
+
+     0000-Fix_gdp_to_send_eos.patch
+
+Other patches have been taken from the GStreamer Cerbero project when that
+provided the needed functionality, or we made our own.
+
+Build Instructions
+------------------
+
+1) First, you will need a custom version of the Android NDK-16. This is
+   necessary as the standard NDK-16 does not provide full autotools support.
+   
+   If you don't already have a copy of android-ndk-r16b, then download the
+   file
+
+     android-ndk-r16b-linux-x86_64.zip
+
+   from 
+
+     https://developer.android.com/ndk/downloads/
+
+   and unzip it into a directory of your choosing. If you have no preference
+   then we suggest ~/src as that is the default where our scripts look first.
+
+2) CD into your copy of android-ndk-r16b, and in the top-most directory run
+   the command:
+
+     build/tools/make_standalone_toolchain.py \
+       --arch arm --api 21 -v --install-dir=toolchains/custom-android
+
+   this builds a complete toolchain, which autotools needs, as the default
+   toolchains only support android-studio and gradle.
+
+3) Next, consult the NDK.cfg file and read the section at the top to find out
+   how to customize the script to find your new custom toolchain.
+
+4) Ensure that you have the needed build-tools installed. Most cross-compilation
+   tools needed by this repo are also provided by it, but the following tools
+   are required:
+
+     Autotools
+     Bison
+     Flex
+     GCC
+     GNU Make
+     Perl
+
+4) Finally, from the top-most directory run ./build_all.sh and watch it
+   work. It should take about 30 minutes to build the entire gstreamer package.
+
+Intent
+------
+
+The intent of this project is to (eventually) have a gradle-controlled build
+of autotool-configured libraries, something that gradle is capable of, but
+does not support out of the box.
+
+The final version of this build system should be able to grab the archived
+files, expand them into build directories, patch them if needed, configure and
+run the autotools inside, then link the whole mess together and build a
+distribution package for Android, all while maintaining a dependency graph so
+that when something changes, the minimal work is done to rebuild everything.
+
+For now things are much less clean. The top level build_all script should be
+able to take a newly-cloned copy of this repo and build an entire gstreamer
+package without help. However, it always starts from scratch and has not been
+tuned to do only the minimal work to achieve our objectives.

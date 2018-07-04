@@ -1,0 +1,13 @@
+#!/bin/bash 
+# Build Shell - Open Shell with Android Build Environment.
+
+# Determine what directory we were invoked from, even if that was via
+# symlink
+PRJ_DIR="$(dirname "$(realpath -s "$PWD/$0")")"
+
+source "${PRJ_DIR}/build.cfg"
+
+( cd ${PRJ_SRC_FULL}; exec ${SHELL} --norc )
+
+
+

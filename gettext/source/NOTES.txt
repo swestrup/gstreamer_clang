@@ -1,0 +1,15 @@
+GETTEXT NOTES
+=============
+
+
+Headers
+-------
+We have had difficulties because the android ndk has incomplete header files
+for gnulib. gettext is the package that creates spawn.h and langinfo.h, but
+when it tries to read these headers, if finds the incomplete ones in the
+toolchain, and barfs.
+
+To fix this we've moved <SYSROOT>/usr/include/spawn.h and langinfo.h into a
+<SYSROOT>/usr/include/bad subdirectory, where they shouldn't be found by
+accident.
+

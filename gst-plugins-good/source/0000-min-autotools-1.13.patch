@@ -1,0 +1,12 @@
+diff -Naur gst-plugins-good-old/configure.ac gst-plugins-good-new/configure.ac
+--- gst-plugins-good-old/configure.ac	2017-12-07 15:47:34.000000000 +0000
++++ gst-plugins-good-new/configure.ac	2018-05-18 17:21:45.426986134 +0000
+@@ -10,7 +10,7 @@
+ AG_GST_INIT
+ 
+ dnl initialize automake
+-AM_INIT_AUTOMAKE([-Wno-portability 1.14 no-dist-gzip dist-xz tar-ustar subdir-objects])
++AM_INIT_AUTOMAKE([-Wno-portability 1.13 no-dist-gzip dist-xz tar-ustar subdir-objects])
+ 
+ dnl define PACKAGE_VERSION_* variables
+ AS_VERSION

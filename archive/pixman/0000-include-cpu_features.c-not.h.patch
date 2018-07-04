@@ -1,0 +1,12 @@
+diff -Naur pixman-old/pixman/pixman-arm.c pixman-new/pixman/pixman-arm.c
+--- pixman-old/pixman/pixman-arm.c	2015-06-30 09:48:31.000000000 +0000
++++ pixman-new/pixman/pixman-arm.c	2018-05-29 14:55:27.481806133 +0000
+@@ -96,7 +96,7 @@
+ 
+ #elif defined(__ANDROID__) || defined(ANDROID) /* Android */
+ 
+-#include <cpu-features.h>
++#include <cpu-features.c>
+ 
+ static arm_cpu_features_t
+ detect_cpu_features (void)

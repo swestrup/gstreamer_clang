@@ -1,0 +1,6 @@
+Despite appearances, libiconv does NOT depend on libintl (a part of
+gettext). The test for gettext components is actually part of the boilerplate
+for autotools, and in this case is not needed by libiconv.
+
+In fact, libiconv is required by gettext, so this project HAS to be able to
+compile without gettext.
