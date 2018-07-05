@@ -12,10 +12,12 @@ for the ARM V7 instruction set with full NEON support, running on the Android
 OS, compiled using Clang in a cross-compiling environment on Linux x86_64 (It
 has so far been tested only on CentOS and OpenSUSE).
 
-This port was made by the folks at Userful.com, and is being released under
-the original GStreamer license (for which, see the file LICENSE in the same
-directory as this file). This includes any bug fixes and/or additions made by
-Userful (for which, see the section "Changes", below).
+This port was made by the folks at Userful.com, and their work is being
+released under Creative Commons CC0 1.0 Universal licence (ie Public
+Domain). This includes any bug fixes and/or additions made by Userful (for
+which, see the section "Changes", below). Naturally, other people's work is
+under their own licenses, for which you will have to consult the component
+archives.
 
 Limitations
 -----------
